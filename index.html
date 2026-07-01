@@ -10,13 +10,15 @@
 
     <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-amber-500">
         
+        <!-- ================= STEP 1: ฝั่งพ่อค้า (ใส่ยอดขาย + เลือกวิธีชำระเงิน) ================= -->
         <div id="sellerStep" class="p-6">
             <div class="text-center mb-4">
                 <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full">ฝั่งพ่อค้า</span>
                 <h1 class="text-xl font-bold text-gray-800 mt-2">🥞 บันทึกยอดขายโตเกียว</h1>
             </div>
 
-            <div class="bg-gradient-to-r from-amber-500 to-orange-500 p-4 rounded-2xl text-white text-center mb-6 shadow-md">
+            <!-- 💵 กล่องโชว์ยอดขายวันนี้ -->
+            <div class="bg-gradient-to-r from-amber-500 to-orange-500 p-4 rounded-2xl text-white text-center mb-4 shadow-md">
                 <p class="text-xs uppercase tracking-wider text-amber-100 font-medium">ยอดขายรวมวันนี้</p>
                 <h3 id="todaySalesDisplay" class="text-3xl font-black mt-1">⏳ กำลังโหลด...</h3>
             </div>
@@ -25,7 +27,29 @@
                 <div>
                     <label class="block text-sm font-semibold text-gray-600 mb-1">ยอดเงินรวม (บาท)</label>
                     <input type="number" id="salesAmount" placeholder="0.00" 
-                        class="w-full px-4 py-4 border-2 border-gray-200 rounded-2xl text-3xl font-bold text-center text-amber-600 focus:outline-none focus:border-amber-500">
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-3xl font-bold text-center text-amber-600 focus:outline-none focus:border-amber-500">
+                </div>
+
+                <!-- 💳 เลือกประเภทการชำระเงิน -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-2">ประเภทการชำระเงิน</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button type="button" id="payCashBtn" onclick="selectPayment('Cash')"
+                            class="py-3 font-bold border-2 border-gray-200 rounded-xl bg-white text-gray-700 hover:bg-gray-50 transition active:scale-95 text-center block">
+                            💵 เงินสด
+                        </button>
+                        <button type="button" id="payQrBtn" onclick="selectPayment('QR')"
+                            class="py-3 font-bold border-2 border-gray-200 rounded-xl bg-white text-gray-700 hover:bg-gray-50 transition active:scale-95 text-center block">
+                            📱 โอนจ่าย
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 🖼️ กล่องแสดงรูป QR Payment (จะแสดงเมื่อกดเลือก โอนจ่าย) -->
+                <div id="qrContainer" class="hidden text-center p-3 bg-gray-50 rounded-2xl border border-gray-200">
+                    <p class="text-xs font-bold text-amber-600 mb-2">สแกนจ่ายเงินที่นี่</p>
+                    <img src="https://res.cloudinary.com/ddz0j6l4d/image/upload/v1782881862/QR_PP_i8uzy4.webp" 
+                        alt="QR Payment" class="w-48 h-48 mx-auto rounded-lg shadow-sm">
                 </div>
                 
                 <button onclick="goToCustomerStep()" 
@@ -35,6 +59,7 @@
             </div>
         </div>
 
+        <!-- ================= STEP 2: ฝั่งลูกค้า (คีย์เบอร์สะสมแต้ม) ================= -->
         <div id="customerStep" class="p-6 hidden bg-amber-50">
             <div class="text-center mb-4">
                 <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">ฝั่งลูกค้า</span>
@@ -70,11 +95,10 @@
 
     <script>
         let currentSales = 0;
+        let selectedPaymentMethod = ""; // ตัวแปรเก็บประเภทการชำระเงิน
         
-        // 🔗 URL Google Apps Script ของคุณ
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQeSeNwC8Oy4zr99FYWlcleWiDXA4Ksazw-0YYB75EvGR1I6XveYMeOJxTEzORFDA/exec"; 
 
-        // ดึงข้อมูลยอดขายรวมของวันนี้ทันทีเมื่อเปิดเว็บ
         window.onload = function() {
             fetch(SCRIPT_URL)
             .then(res => res.json())
@@ -86,10 +110,32 @@
             });
         };
 
+        // ฟังก์ชันเลือกวิธีชำระเงิน ไฮไลต์ปุ่ม และแสดง/ซ่อนคิวอาร์โค้ด
+        function selectPayment(method) {
+            selectedPaymentMethod = method;
+            const cashBtn = document.getElementById('payCashBtn');
+            const qrBtn = document.getElementById('payQrBtn');
+            const qrContainer = document.getElementById('qrContainer');
+
+            if(method === 'Cash') {
+                cashBtn.className = "py-3 font-bold border-2 border-amber-500 rounded-xl bg-amber-50 text-amber-700 shadow-sm text-center block transition active:scale-95";
+                qrBtn.className = "py-3 font-bold border-2 border-gray-200 rounded-xl bg-white text-gray-700 hover:bg-gray-50 shadow-sm text-center block transition active:scale-95";
+                qrContainer.classList.add('hidden');
+            } else if (method === 'QR') {
+                qrBtn.className = "py-3 font-bold border-2 border-amber-500 rounded-xl bg-amber-50 text-amber-700 shadow-sm text-center block transition active:scale-95";
+                cashBtn.className = "py-3 font-bold border-2 border-gray-200 rounded-xl bg-white text-gray-700 hover:bg-gray-50 shadow-sm text-center block transition active:scale-95";
+                qrContainer.classList.remove('hidden');
+            }
+        }
+
         function goToCustomerStep() {
             const amount = document.getElementById('salesAmount').value;
             if (!amount || amount <= 0) {
                 alert('กรุณาใส่ยอดขายก่อนครับพ่อค้า!');
+                return;
+            }
+            if (!selectedPaymentMethod) {
+                alert('กรุณาเลือกประเภทการชำระเงินก่อนครับ!');
                 return;
             }
             currentSales = amount;
@@ -111,6 +157,14 @@
             phoneInput.value = phoneInput.value.slice(0, -1);
         }
 
+        function resetSellerForm() {
+            document.getElementById('salesAmount').value = "";
+            selectedPaymentMethod = "";
+            document.getElementById('payCashBtn').className = "py-3 font-bold border-2 border-gray-200 rounded-xl bg-white text-gray-700 hover:bg-gray-50 transition active:scale-95 text-center block";
+            document.getElementById('payQrBtn').className = "py-3 font-bold border-2 border-gray-200 rounded-xl bg-white text-gray-700 hover:bg-gray-50 transition active:scale-95 text-center block";
+            document.getElementById('qrContainer').classList.add('hidden');
+        }
+
         function backToSeller() {
             document.getElementById('customerStep').classList.add('hidden');
             document.getElementById('sellerStep').classList.remove('hidden');
@@ -129,7 +183,6 @@
             submitBtn.innerText = "⏳...";
             submitBtn.disabled = true;
 
-            // ส่งข้อมูลด้วยโหมดดึงคำตอบกลับ (เพื่อเอาข้อมูลยอดขายใหม่มาอัปเดตหน้าจอ)
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'cors', 
@@ -139,14 +192,14 @@
                 body: JSON.stringify({
                     phone: phone,
                     sales: currentSales,
-                    points: pointsCalculated
+                    points: pointsCalculated,
+                    payment: selectedPaymentMethod // ส่งวิธีจ่ายเงินไปด้วย (เก็บเผื่อไว้ขยายระบบอนาคต)
                 })
             })
             .then(res => res.json())
             .then(data => {
                 if(data.status === "success") {
                     alert(`🎉 บันทึกสำเร็จ!\nเบอร์ ${phone} ได้รับสะสมเพิ่ม ${pointsCalculated} แต้มครับ`);
-                    // อัปเดตยอดขายรวมที่หน้าจอฝั่งพ่อทันที
                     document.getElementById('todaySalesDisplay').innerText = data.todaySales.toLocaleString() + " บาท";
                 }
             })
@@ -157,7 +210,7 @@
             .finally(() => {
                 submitBtn.innerText = "ตกลง";
                 submitBtn.disabled = false;
-                document.getElementById('salesAmount').value = "";
+                resetSellerForm(); // รีเซ็ตฟอร์มทั้งหมดรวมถึงสีกระดุมจ่ายเงินด้วย
                 backToSeller();
             });
         }
