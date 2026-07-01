@@ -10,14 +10,12 @@
 
     <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-amber-500">
         
-        <!-- ================= STEP 1: ฝั่งพ่อค้า (ใส่ยอดขาย + เลือกวิธีชำระเงิน) ================= -->
         <div id="sellerStep" class="p-6">
             <div class="text-center mb-4">
                 <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full">ฝั่งพ่อค้า</span>
                 <h1 class="text-xl font-bold text-gray-800 mt-2">🥞 บันทึกยอดขายโตเกียว</h1>
             </div>
 
-            <!-- 💵 กล่องโชว์ยอดขายวันนี้ -->
             <div class="bg-gradient-to-r from-amber-500 to-orange-500 p-4 rounded-2xl text-white text-center mb-6 shadow-md">
                 <p class="text-xs uppercase tracking-wider text-amber-100 font-medium">ยอดขายรวมวันนี้</p>
                 <h3 id="todaySalesDisplay" class="text-3xl font-black mt-1">⏳ กำลังโหลด...</h3>
@@ -30,7 +28,6 @@
                         class="w-full px-4 py-4 border-2 border-gray-200 rounded-2xl text-3xl font-bold text-center text-amber-600 focus:outline-none focus:border-amber-500">
                 </div>
 
-                <!-- 💳 กดเลือกปุ๊บ สลับหน้าปั๊บ -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-600 mb-2">เลือกประเภทการชำระเงินเพื่อไปต่อ</label>
                     <div class="grid grid-cols-2 gap-4">
@@ -47,9 +44,7 @@
             </div>
         </div>
 
-        <!-- ================= STEP 1.5: หน้าจอแสดง QR Code สำหรับลูกค้า (เฉพาะโอนจ่าย) ================= -->
         <div id="qrStep" class="p-6 hidden text-center bg-stone-50 relative">
-            <!-- ⬅️ ปุ่มย้อนกลับไปเปลี่ยนวิธีชำระเงิน (หน้า QR) -->
             <button onclick="backToEditPayment()" class="absolute top-6 left-6 text-sm font-medium text-gray-400 hover:text-gray-600 flex items-center gap-1">
                 ⬅️ ย้อนกลับ
             </button>
@@ -59,7 +54,6 @@
                 <p class="text-gray-500 text-sm mt-3">ยอดเงินที่ต้องชำระ</p>
                 <h2 id="displayQrAmount" class="text-4xl font-extrabold text-orange-600 my-2">0 บาท</h2>
                 
-                <!-- รูปภาพ QR Code จากลิงก์ของคุณ -->
                 <div class="bg-white p-4 rounded-3xl border-2 border-orange-200 shadow-inner my-4 max-w-[240px] mx-auto">
                     <img src="https://res.cloudinary.com/ddz0j6l4d/image/upload/v1782881862/QR_PP_i8uzy4.webp" 
                         alt="QR Payment" class="w-full h-auto rounded-xl">
@@ -74,9 +68,7 @@
             </div>
         </div>
 
-        <!-- ================= STEP 2: ฝั่งลูกค้า (คีย์เบอร์สะสมแต้ม) ================= -->
         <div id="customerStep" class="p-6 hidden bg-amber-50 relative">
-            <!-- ⬅️ ปุ่มย้อนกลับไปเปลี่ยนวิธีชำระเงิน (หน้ากดเบอร์) -->
             <button onclick="backToEditPayment()" class="absolute top-6 left-6 text-sm font-medium text-gray-400 hover:text-gray-600 flex items-center gap-1">
                 ⬅️ ย้อนกลับ
             </button>
@@ -151,13 +143,12 @@
             }
         }
 
-        // 🔄 ฟังก์ชันทางลัด: ย้อนกลับไปหน้าแรกโดยไม่ลบยอดเงิน (เก็บยอดเงินไว้ให้เลือกวิธีจ่ายใหม่)
         function backToEditPayment() {
             document.getElementById('customerStep').classList.add('hidden');
             document.getElementById('qrStep').classList.add('hidden');
             document.getElementById('sellerStep').classList.remove('hidden');
-            document.getElementById('customerPhone').value = ""; // ล้างเบอร์โทรศัพท์ที่อาจจะกดค้างไว้
-            selectedPaymentMethod = ""; // รีเซ็ตวิธีชำระเงินเก่า เพื่อให้เลือกใหม่
+            document.getElementById('customerPhone').value = ""; 
+            selectedPaymentMethod = ""; 
         }
 
         function goToCustomerStep() {
@@ -177,7 +168,6 @@
             phoneInput.value = phoneInput.value.slice(0, -1);
         }
 
-        // ฟังก์ชันล้างค่าทั้งหมด (กรณีต้องการยกเลิกออเดอร์นั้นไปเลย)
         function backToResetAll() {
             document.getElementById('customerStep').classList.add('hidden');
             document.getElementById('qrStep').classList.add('hidden');
@@ -216,18 +206,19 @@
             .then(res => res.json())
             .then(data => {
                 if(data.status === "success") {
-                    alert(`🎉 บันทึกสำเร็จ!\nเบอร์ ${phone} ได้รับสะสมเพิ่ม ${pointsCalculated} แต้มครับ`);
+                    // 🎉 แก้ไขกล่องข้อความแจ้งเตือนให้แสดงแต้มรวมทั้งหมดของลูกค้า
+                    alert(`🎉 บันทึกสำเร็จ!\n\n📞 เบอร์: ${phone}\n➕ ได้รับเพิ่ม: ${pointsCalculated} แต้ม\n⭐ แต้มสะสมรวมทั้งหมด: ${data.totalPoints} แต้ม`);
                     document.getElementById('todaySalesDisplay').innerText = data.todaySales.toLocaleString() + " บาท";
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('บันทึกข้อมูลแล้ว! (กรุณารอระบบอัปเดตยอดขายสักครู่)');
+                alert('บันทึกข้อมูลแล้ว! (แต่การคำนวณแต้มรวมอาจล่าช้าเล็กน้อย)');
             })
             .finally(() => {
                 submitBtn.innerText = "ตกลง";
                 submitBtn.disabled = false;
-                backToResetAll(); // เด้งกลับหน้าแรกและล้างฟอร์มเพื่อรอคิวถัดไป
+                backToResetAll(); 
             });
         }
     </script>
