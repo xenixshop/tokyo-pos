@@ -48,28 +48,40 @@
         </div>
 
         <!-- ================= STEP 1.5: หน้าจอแสดง QR Code สำหรับลูกค้า (เฉพาะโอนจ่าย) ================= -->
-        <div id="qrStep" class="p-6 hidden text-center bg-stone-50">
-            <span class="bg-orange-100 text-orange-800 text-xs font-bold px-3 py-1 rounded-full">📱 ช่องทางโอนเงิน</span>
-            <p class="text-gray-500 text-sm mt-3">ยอดเงินที่ต้องชำระ</p>
-            <h2 id="displayQrAmount" class="text-4xl font-extrabold text-orange-600 my-2">0 บาท</h2>
-            
-            <!-- รูปภาพ QR Code จากลิงก์ของคุณ -->
-            <div class="bg-white p-4 rounded-3xl border-2 border-orange-200 shadow-inner my-4 max-w-[240px] mx-auto">
-                <img src="https://res.cloudinary.com/ddz0j6l4d/image/upload/v1782881862/QR_PP_i8uzy4.webp" 
-                    alt="QR Payment" class="w-full h-auto rounded-xl">
-            </div>
-
-            <p class="text-xs text-gray-400 mb-6">เมื่อโอนสำเร็จแล้ว กดปุ่มด้านล่างเพื่อสะสมแต้ม</p>
-
-            <button onclick="goToCustomerStep()" 
-                class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-2xl text-lg transition shadow-lg shadow-orange-200 animate-bounce">
-                จ่ายแล้ว ไปสะสมแต้มกันเลย ➡️
+        <div id="qrStep" class="p-6 hidden text-center bg-stone-50 relative">
+            <!-- ⬅️ ปุ่มย้อนกลับไปเปลี่ยนวิธีชำระเงิน (หน้า QR) -->
+            <button onclick="backToEditPayment()" class="absolute top-6 left-6 text-sm font-medium text-gray-400 hover:text-gray-600 flex items-center gap-1">
+                ⬅️ ย้อนกลับ
             </button>
+
+            <div class="mt-4">
+                <span class="bg-orange-100 text-orange-800 text-xs font-bold px-3 py-1 rounded-full">📱 ช่องทางโอนเงิน</span>
+                <p class="text-gray-500 text-sm mt-3">ยอดเงินที่ต้องชำระ</p>
+                <h2 id="displayQrAmount" class="text-4xl font-extrabold text-orange-600 my-2">0 บาท</h2>
+                
+                <!-- รูปภาพ QR Code จากลิงก์ของคุณ -->
+                <div class="bg-white p-4 rounded-3xl border-2 border-orange-200 shadow-inner my-4 max-w-[240px] mx-auto">
+                    <img src="https://res.cloudinary.com/ddz0j6l4d/image/upload/v1782881862/QR_PP_i8uzy4.webp" 
+                        alt="QR Payment" class="w-full h-auto rounded-xl">
+                </div>
+
+                <p class="text-xs text-gray-400 mb-6">เมื่อโอนสำเร็จแล้ว กดปุ่มด้านล่างเพื่อสะสมแต้ม</p>
+
+                <button onclick="goToCustomerStep()" 
+                    class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-2xl text-lg transition shadow-lg shadow-orange-200 animate-bounce">
+                    จ่ายแล้ว ไปสะสมแต้มกันเลย ➡️
+                </button>
+            </div>
         </div>
 
         <!-- ================= STEP 2: ฝั่งลูกค้า (คีย์เบอร์สะสมแต้ม) ================= -->
-        <div id="customerStep" class="p-6 hidden bg-amber-50">
-            <div class="text-center mb-4">
+        <div id="customerStep" class="p-6 hidden bg-amber-50 relative">
+            <!-- ⬅️ ปุ่มย้อนกลับไปเปลี่ยนวิธีชำระเงิน (หน้ากดเบอร์) -->
+            <button onclick="backToEditPayment()" class="absolute top-6 left-6 text-sm font-medium text-gray-400 hover:text-gray-600 flex items-center gap-1">
+                ⬅️ ย้อนกลับ
+            </button>
+
+            <div class="text-center mb-4 mt-4">
                 <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">ฝั่งลูกค้า</span>
                 <p class="text-gray-500 text-sm mt-2">ยอดซื้อของคุณคือ</p>
                 <h2 id="displayAmount" class="text-4xl font-extrabold text-amber-600 my-1">0 บาท</h2>
@@ -94,8 +106,8 @@
                 <button onclick="submitPoints()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl text-lg shadow-md active:scale-95 transition">ตกลง</button>
             </div>
 
-            <button onclick="backToSeller()" class="w-full text-center text-sm text-gray-400 hover:text-gray-600 underline">
-                ย้อนกลับ (สำหรับพ่อค้า)
+            <button onclick="backToResetAll()" class="w-full text-center text-sm text-gray-400 hover:text-gray-600 underline">
+                ยกเลิกออเดอร์นี้ (เริ่มใหม่ทั้งหมด)
             </button>
         </div>
 
@@ -118,7 +130,6 @@
             });
         };
 
-        // ฟังก์ชันเลือกวิธีชำระเงินและสลับหน้าอัตโนมัติ
         function selectPayment(method) {
             const amount = document.getElementById('salesAmount').value;
             if (!amount || amount <= 0) {
@@ -131,19 +142,24 @@
             document.getElementById('displayAmount').innerText = currentSales + " บาท";
             document.getElementById('displayQrAmount').innerText = currentSales + " บาท";
 
-            // ซ่อนหน้าแรกฝั่งพ่อค้าก่อน
             document.getElementById('sellerStep').classList.add('hidden');
 
             if(method === 'Cash') {
-                // ถ้าจ่ายเงินสด -> เด้งไปหน้าลูกค้ากดเบอร์เลย
                 document.getElementById('customerStep').classList.remove('hidden');
             } else if (method === 'QR') {
-                // ถ้าโอนจ่าย -> เด้งไปหน้าโชว์ QR Code ก่อน
                 document.getElementById('qrStep').classList.remove('hidden');
             }
         }
 
-        // ฟังก์ชันจากหน้า QR โอนเงิน เปลี่ยนไปหน้าคีย์เบอร์ลูกค้า
+        // 🔄 ฟังก์ชันทางลัด: ย้อนกลับไปหน้าแรกโดยไม่ลบยอดเงิน (เก็บยอดเงินไว้ให้เลือกวิธีจ่ายใหม่)
+        function backToEditPayment() {
+            document.getElementById('customerStep').classList.add('hidden');
+            document.getElementById('qrStep').classList.add('hidden');
+            document.getElementById('sellerStep').classList.remove('hidden');
+            document.getElementById('customerPhone').value = ""; // ล้างเบอร์โทรศัพท์ที่อาจจะกดค้างไว้
+            selectedPaymentMethod = ""; // รีเซ็ตวิธีชำระเงินเก่า เพื่อให้เลือกใหม่
+        }
+
         function goToCustomerStep() {
             document.getElementById('qrStep').classList.add('hidden');
             document.getElementById('customerStep').classList.remove('hidden');
@@ -161,13 +177,15 @@
             phoneInput.value = phoneInput.value.slice(0, -1);
         }
 
-        function backToSeller() {
+        // ฟังก์ชันล้างค่าทั้งหมด (กรณีต้องการยกเลิกออเดอร์นั้นไปเลย)
+        function backToResetAll() {
             document.getElementById('customerStep').classList.add('hidden');
             document.getElementById('qrStep').classList.add('hidden');
             document.getElementById('sellerStep').classList.remove('hidden');
             document.getElementById('customerPhone').value = "";
             document.getElementById('salesAmount').value = "";
             selectedPaymentMethod = "";
+            currentSales = 0;
         }
 
         function submitPoints() {
@@ -209,7 +227,7 @@
             .finally(() => {
                 submitBtn.innerText = "ตกลง";
                 submitBtn.disabled = false;
-                backToSeller(); // เด้งกลับหน้าแรกเพื่อรอรับออเดอร์ใหม่ทันที
+                backToResetAll(); // เด้งกลับหน้าแรกและล้างฟอร์มเพื่อรอคิวถัดไป
             });
         }
     </script>
